@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="moim">
+
+
+
+	<!-- 메인에서 카테고리 눌렀을때 -->
+	<select id="moimList" resultType="hashmap">
+    <![CDATA[
+	 SELECT M.*, F.F_SVNAME
+	 FROM MOIM M, FILE_T F
+	 WHERE F.F_DEL_YN(+) = 'N'
+	 AND F.F_MAIN_YN(+) = 'Y' 
+	 AND M.MO_DEL_YN = 'N' 
+	 AND F.F_TABLE(+) = 'M'
+	 AND M.MO_CATEGORY = #{MO_CATEGORY}
+	 ORDER BY  M.MO_CLOSE_YN, M.MO_REGDATE DESC
+     ]]>
+	</select>
+
+	<!-- 카테고리에서 select option 선택 -->
+	<select id="moimListSearch" resultType="hashmap">
+    <![CDATA[
+	 SELECT M.*, F.F_SVNAME
+	 FROM MOIM M, FILE_T F
+	 WHERE F.F_DEL_YN(+) = 'N'
+	 AND F.F_MAIN_YN(+) = 'Y' 
+	 AND M.MO_DEL_YN = 'N' 
+	 AND F.F_TABLE(+) = 'M'
+     ]]>
+		<if test="mo_category != null">
+			AND (M.MO_CATEGORY = #{MO_CATEGORY})
+		</if>
+		<trim prefixOverrides="OR">
+			<foreach item='type' collection="typeArr">
+				<trim prefix="OR">
+					<if test="keyword != null">
+						<choose>
+							<when test="searchType == 'R'.toString()">
+								AND (M.MO_REGION = #{MO_REGION})
+							</when>
+							<when test = "searchtype == 'D'.tostring()">
+								<if test="searchtype == 'D'.tostring()">
+								AND (M.MO_REGDATE = #{MO_REGDATE})
+								</if>
+								<if test="searchType == 'DD'.toString()">
+								AND (M.MO_DEADTIME BETWEEN #{MO_REGDATE} AND #{MO_REGDATE})
+							</if>
+							</when>
+							<when test = "searchtype == 'T'.tostring()">
+							<if test="searchType == 'T'.toString()">
+								AND (AND M.MO_DEADTIME = #{MO_DEADTIME})
+							</if>
+							<if test="searchType == 'TT'.toString()">
+								AND (M.MO_DEADTIME BETWEEN #{MO_DEADTIME} AND #{MO_DEADTIME})
+							</if>
+							</when>
+						</choose>
+					</if>
+				</trim>
+			</foreach>
+		</trim>
+		ORDER BY M.MO_CLOSE_YN, M.MO_REGDATE DESC
+	</select>
